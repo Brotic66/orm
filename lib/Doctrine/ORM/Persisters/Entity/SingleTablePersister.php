@@ -162,14 +162,21 @@ class SingleTablePersister extends AbstractEntityInheritancePersister
         $values = [];
 
         if ($this->class->discriminatorValue !== null) { // discriminators can be 0
+            if ($this->class->discriminatorColumn['type'] == 'string') {
+                $this->class->discriminatorValue = (string) $this->class->discriminatorValue;
+            }
+
             $values[] = $this->conn->quote($this->class->discriminatorValue);
         }
 
         $discrValues = array_flip($this->class->discriminatorMap);
 
         foreach ($this->class->subClasses as $subclassName) {
-            $values[] = $this->conn->quote($discrValues[$subclassName]);
-        }
+            $value = $discrValues[$subclassName];
+
+            if ($this->class->discriminatorColumn['type'] == 'string') {
+                $value = (string) $value;
+            }
 
         $values     = implode(', ', $values);
         $discColumn = $this->class->discriminatorColumn['name'];
