@@ -450,11 +450,21 @@ class SqlWalker implements TreeWalker
             $values = [];
 
             if ($class->discriminatorValue !== null) { // discriminators can be 0
+                if ($class->discriminatorColumn['type'] == 'string') {
+                    $class->discriminatorValue = (string) $class->discriminatorValue;
+                }
+
                 $values[] = $conn->quote($class->discriminatorValue);
             }
 
             foreach ($class->subClasses as $subclassName) {
-                $values[] = $conn->quote($this->em->getClassMetadata($subclassName)->discriminatorValue);
+                $value = $this->em->getClassMetadata($subclassName)->discriminatorValue;
+
+                if ($this->em->getClassMetadata($subclassName)->discriminatorColumn['type'] == 'string') {
+                    $value = (string) $value;
+                }
+
+                $values[] = $conn->quote($value);
             }
 
             $sqlTableAlias = ($this->useSqlTableAliases)
